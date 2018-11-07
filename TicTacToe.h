@@ -12,6 +12,9 @@ using namespace std;
 typedef char ** Board;	//Chess board
 typedef char ChessType; //Type of the chess, 'X' or 'O'
 
+#define MAX_SCORE 1
+#define MIN_SCORE -1
+
 //The result of the game
 typedef enum {
 	X_WON = 0,
@@ -31,8 +34,8 @@ public:
 			board[i] = new char[NCOLS];
 			fill(board[i], board[i] + NCOLS, EMPTY); //No chess on the board initial
 		}
-		score[X_WON] = computerType == X ? 1 : -1;
-		score[O_WON] = computerType == X ? -1 : 1;
+		score[X_WON] = computerType == X ? MAX_SCORE : MIN_SCORE;
+		score[O_WON] = computerType == X ? MIN_SCORE : MAX_SCORE;
 		score[DRAW] = 0;
 	}
 
@@ -109,5 +112,5 @@ private:
 
 	@return Returns the score of the best position, 1 for win, -1 for lose and 0 for draw.
 	*/
-	int getBestPosition(int *pBestRow, int *pBestCol, ChessType chessType);
+	int getBestPosition(ChessType chessType, int preBestScore, int *pBestRow, int *pBestCol);
 };

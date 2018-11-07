@@ -6,6 +6,8 @@ typedef char SearchType;
 #define SEARCH_MAX '0' //Search for max score as best
 #define SEARCH_MIN '1' //Search for minimum score as best
 
+#define NO_ALPHA_BETA (MIN_SCORE - 1)
+
 RESULT TicTacToe::getResult() {
 	RESULT result;
 	result = rowResult();
@@ -112,55 +114,55 @@ void TicTacToe::addO(int row, int col) {
 void TicTacToe::computer() {
 	int row, col;
 	if (computerType == X) {
-		getBestPosition(&row, &col, X);
+		getBestPosition(X, NO_ALPHA_BETA, &row, &col);
 		addX(row, col);
 	}
 	else {
-		getBestPosition(&row, &col, O);
+		getBestPosition(O, NO_ALPHA_BETA, &row, &col);
 		addO(row, col);
 	}
 }
 
-int TicTacToe::getBestPosition(int *pBestRow, int *pBestCol, ChessType chessType) {
+int TicTacToe::getBestPosition(ChessType chessType, int preBestScore, int *pBestRow, int *pBestCol) {
 	SearchType searchType = chessType == computerType ? SEARCH_MAX : SEARCH_MIN;
-	int bestScore = searchType == SEARCH_MAX ? -1 : 1;
-	int bestRow, bestCol;
+	int bestRow, bestCol, bestScore = searchType == SEARCH_MAX ? MIN_SCORE : MAX_SCORE;
 	bool hasBestInit = false;
 	for (int row = 0; row < NROWS; row++)
 		for (int col = 0; col < NCOLS; col++) {
-			//Traverses all empty positions
 			if (board[row][col] == EMPTY) {
-				int currentScore;
 				board[row][col] = chessType;
 				RESULT result = getResult();
+				int currentScore;
 				if (result != NO_RESULT) {
 					currentScore = score[result];
 				}
 				else {
-					currentScore = getBestPosition(pBestRow, pBestCol, REVERSE_CHESS_TYPE(chessType));
+					currentScore = getBestPosition(REVERSE_CHESS_TYPE(chessType), bestScore, pBestRow, pBestCol);
 				}
 				board[row][col] = EMPTY;
-				if (searchType == SEARCH_MAX) { //If the position with the max score is the optium
-					if (currentScore > bestScore || !hasBestInit) {
-						bestScore = currentScore;
+				if (searchType == SEARCH_MAX) { //If the position with max score is optium					
+					if (!hasBestInit || currentScore > bestScore) {
 						bestRow = row;
 						bestCol = col;
+						bestScore = currentScore;
 						hasBestInit = true;
-						if (currentScore == 1) goto RETURN;
 					}
+					if (preBestScore != NO_ALPHA_BETA && currentScore > preBestScore) goto END;
+					if (currentScore == MAX_SCORE) goto END;
 				}
-				else { //If the position with the minimum score is the optium
-					if (currentScore < bestScore || !hasBestInit) {
-						bestScore = currentScore;
+				else { //If the position with minmum score is optium					
+					if (!hasBestInit || currentScore < bestScore) {
 						bestRow = row;
 						bestCol = col;
+						bestScore = currentScore;
 						hasBestInit = true;
-						if (currentScore == -1) goto RETURN;
 					}
+					if (preBestScore != NO_ALPHA_BETA && currentScore < preBestScore) goto END;
+					if (currentScore == MIN_SCORE) goto END;
 				}
 			}
 		}
-RETURN: {
+END: {
 	*pBestRow = bestRow;
 	*pBestCol = bestCol;
 	return bestScore;
@@ -172,4 +174,5 @@ void TicTacToe::getBoard(Board outputBoard) {
 		for (int col = 0; col < NCOLS; col++)
 			outputBoard[row][col] = board[row][col];
 }
+
 
