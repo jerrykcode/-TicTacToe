@@ -1,19 +1,9 @@
 #pragma once
 
+#include "Board.h"
+#include "ZMap.h"
 #include <algorithm>
 using namespace std;
-
-#define X 'X'           /* 'X' in tic tac toe */
-#define O 'O'			/* 'O' in tic tac toe */
-#define EMPTY ' '       /* No chess */
-#define REVERSE_CHESS_TYPE(chessType) (chessType == X ? O : X)
-#define NROWS 3
-#define NCOLS NROWS
-typedef char ** Board;	//Chess board
-typedef char ChessType; //Type of the chess, 'X' or 'O'
-
-#define MAX_SCORE 1
-#define MIN_SCORE -1
 
 //The result of the game
 typedef enum {
@@ -37,6 +27,8 @@ public:
 		score[X_WON] = computerType == X ? MAX_SCORE : MIN_SCORE;
 		score[O_WON] = computerType == X ? MIN_SCORE : MAX_SCORE;
 		score[DRAW] = 0;
+
+		zmap = *(new ZMap(NROWS));
 	}
 
 	//Destructor
@@ -72,6 +64,8 @@ public:
 private:
 
 	Board board; //The chess board
+
+	ZMap zmap = NULL;
 
 	RESULT rowResult();
 	RESULT colResult();

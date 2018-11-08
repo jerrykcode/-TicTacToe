@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "TicTacToe.h"
 
-
 typedef char SearchType;
 #define SEARCH_MAX '0' //Search for max score as best
 #define SEARCH_MIN '1' //Search for minimum score as best
@@ -124,6 +123,13 @@ void TicTacToe::computer() {
 }
 
 int TicTacToe::getBestPosition(ChessType chessType, int preBestScore, int *pBestRow, int *pBestCol) {
+	if (zmap.hasKey(board)) {
+		BestPosition pos = zmap.value(board);
+		*pBestRow = pos.bestRow;
+		*pBestCol = pos.bestCol;
+		return pos.bestScore;
+	}
+	bool isAlphaBetaPruning = false;
 	SearchType searchType = chessType == computerType ? SEARCH_MAX : SEARCH_MIN;
 	int bestRow, bestCol, bestScore = searchType == SEARCH_MAX ? MIN_SCORE : MAX_SCORE;
 	bool hasBestInit = false;
@@ -147,7 +153,10 @@ int TicTacToe::getBestPosition(ChessType chessType, int preBestScore, int *pBest
 						bestScore = currentScore;
 						hasBestInit = true;
 					}
-					if (preBestScore != NO_ALPHA_BETA && currentScore > preBestScore) goto END;
+					if (preBestScore != NO_ALPHA_BETA && currentScore > preBestScore) {
+						isAlphaBetaPruning = true;
+						goto END;
+					}
 					if (currentScore == MAX_SCORE) goto END;
 				}
 				else { //If the position with minmum score is optium					
@@ -157,7 +166,10 @@ int TicTacToe::getBestPosition(ChessType chessType, int preBestScore, int *pBest
 						bestScore = currentScore;
 						hasBestInit = true;
 					}
-					if (preBestScore != NO_ALPHA_BETA && currentScore < preBestScore) goto END;
+					if (preBestScore != NO_ALPHA_BETA && currentScore < preBestScore) {
+						isAlphaBetaPruning = true;
+						goto END;
+					}
 					if (currentScore == MIN_SCORE) goto END;
 				}
 			}
@@ -165,6 +177,10 @@ int TicTacToe::getBestPosition(ChessType chessType, int preBestScore, int *pBest
 END: {
 	*pBestRow = bestRow;
 	*pBestCol = bestCol;
+	if (!isAlphaBetaPruning) {
+		BestPosition pos(bestScore, bestRow, bestCol);
+		zmap.insert(board, pos);
+	}
 	return bestScore;
 	}
 }
